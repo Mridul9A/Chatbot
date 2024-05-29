@@ -1,25 +1,44 @@
-import logo from './logo.svg';
-import './App.css';
+// src/App.js
+import React, { useEffect, useState } from "react";
+import { createDirectLine } from "botframework-webchat";
+import ReactWebChat from "botframework-webchat";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+const App = () => {
+  const [directLine, setDirectLine] = useState(null);
+
+  useEffect(() => {
+    const fetchDirectLineToken = async () => {
+      try {
+        const res = await fetch(
+          "https://directline.botframework.com/v3/directline/tokens/generate",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer YOUR_DIRECT_LINE_SECRET`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!res.ok) {
+          throw new Error("Failed to fetch Direct Line token");
+        }
+        const data = await res.json();
+        setDirectLine(createDirectLine({ token: data.token }));
+      } catch (error) {
+        console.error("Error fetching Direct Line token:", error);
+      }
+    };
+
+    fetchDirectLineToken();
+  }, []);
+
+  return directLine ? (
+    <div style={{ height: "500px", width: "100%" }}>
+      <ReactWebChat directLine={directLine} />
     </div>
+  ) : (
+    <div>Loading...</div>
   );
-}
+};
 
 export default App;
